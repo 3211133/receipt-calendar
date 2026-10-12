@@ -35,7 +35,10 @@ class MonthReceipts:
                 d.isoformat(): str(p) for d, p in sorted(self.entries.items())
             }
         }
-        self.json_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        # 書き込み途中で落ちても既存ファイルを壊さないよう、一時ファイル経由で置き換える
+        tmp = self.json_path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        tmp.replace(self.json_path)
 
     def load(self) -> None:
         self.entries.clear()

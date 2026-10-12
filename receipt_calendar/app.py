@@ -71,10 +71,12 @@ class ReceiptCalendarApp:
         self.load_month()
 
     def load_month(self) -> None:
+        self.load_failed = False
         try:
             self.receipts.load()
-        except Exception as e:  # 壊れたJSONでもGUIは起動させる
-            messagebox.showerror("読み込みエラー", f"{self.receipts.json_path}\n{e}")
+        except Exception as e:  # 壊れたJSONでもGUIは起動させる。上書きで消さないよう編集は止める
+            self.load_failed = True
+            messagebox.showerror("読み込みエラー", f"{self.receipts.json_path}\n{e}\n\nこの月は編集できません。ファイルを直してから開き直してください。")
         self.title_label.config(text=f"{self.receipts.year}年 {self.receipts.month}月")
         self.redraw()
 
@@ -114,13 +116,16 @@ class ReceiptCalendarApp:
         cell = event.widget
         self._paint(cell)
         day = cell.day
-        if day is None:
+        if day is None or self.load_failed:
             return event.action
         files = self.root.tk.splitlist(event.data)
         if len(files) != 1:
             messagebox.showerror("登録エラー", "1日に登録できるファイルは1つです。1枚ずつドロップしてください。")
             return event.action
         new_path = Path(files[0])
+        if not new_path.is_file():
+            messagebox.showerror("登録エラー", f"ファイルではありません。\n{new_path}")
+            return event.action
         current = self.receipts.get(day)
         if current is not None and current != new_path:
             if not messagebox.askyesno(
@@ -134,7 +139,7 @@ class ReceiptCalendarApp:
     def _on_right_click(self, event) -> None:
         day = event.widget.day
         path = self.receipts.get(day) if day else None
-        if path is None:
+        if path is None or self.load_failed:
             return
         if messagebox.askyesno("登録解除", f"{day} の登録を解除しますか？\n\n{path.name}"):
             self.receipts.remove(day)
