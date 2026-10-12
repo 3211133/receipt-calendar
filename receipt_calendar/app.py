@@ -73,8 +73,8 @@ class ReceiptCalendarApp:
     def load_month(self) -> None:
         try:
             self.receipts.load()
-        except Exception as e:  # 壊れたTOMLでもGUIは起動させる
-            messagebox.showerror("読み込みエラー", f"{self.receipts.toml_path}\n{e}")
+        except Exception as e:  # 壊れたJSONでもGUIは起動させる
+            messagebox.showerror("読み込みエラー", f"{self.receipts.json_path}\n{e}")
         self.title_label.config(text=f"{self.receipts.year}年 {self.receipts.month}月")
         self.redraw()
 
@@ -86,7 +86,7 @@ class ReceiptCalendarApp:
             cell.day = day if day and day.month == self.receipts.month else None
             self._paint(cell)
         count = len(self.receipts.entries)
-        self.status.config(text=f"登録 {count} 件  →  {self.receipts.toml_path}")
+        self.status.config(text=f"登録 {count} 件  →  {self.receipts.json_path}")
 
     def _paint(self, cell: tk.Label) -> None:
         day = cell.day
@@ -146,7 +146,7 @@ class ReceiptCalendarApp:
         if path is not None:
             self.status.config(text=f"{day}: {path}")
         else:
-            self.status.config(text=f"登録 {len(self.receipts.entries)} 件  →  {self.receipts.toml_path}")
+            self.status.config(text=f"登録 {len(self.receipts.entries)} 件  →  {self.receipts.json_path}")
 
     def _save(self) -> None:
         try:

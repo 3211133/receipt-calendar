@@ -22,7 +22,7 @@ def test_assign_rejects_other_month(tmp_path):
         m.assign(date(2026, 11, 1), Path("a.jpg"))
 
 
-def test_toml_roundtrip(tmp_path):
+def test_json_roundtrip(tmp_path):
     m = MonthReceipts(2026, 10, tmp_path / "output")
     p1 = Path(r"C:\Users\テスト\My Pictures\IMG_20261003_081522.jpg")
     p2 = Path(r"C:\it's\IMG_2.jpg")
@@ -30,8 +30,8 @@ def test_toml_roundtrip(tmp_path):
     m.assign(date(2026, 10, 1), p1)
     m.save()
 
-    text = m.toml_path.read_text(encoding="utf-8")
-    assert m.toml_path.name == "receipts_2026-10.toml"
+    text = m.json_path.read_text(encoding="utf-8")
+    assert m.json_path.name == "receipts_2026-10.json"
     assert text.index("2026-10-01") < text.index("2026-10-02")
 
     loaded = MonthReceipts(2026, 10, tmp_path / "output")

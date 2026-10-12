@@ -1,11 +1,9 @@
-"""月ごとの領収書割り当て（日付 -> ファイルパス）とTOML入出力。GUI非依存。"""
+"""月ごとの領収書割り当て（日付 -> ファイルパス）とJSON入出力。GUI非依存。"""
 from __future__ import annotations
 
-import tomllib
+import json
 from datetime import date
 from pathlib import Path
-
-import tomli_w
 
 
 class MonthReceipts:
@@ -16,8 +14,8 @@ class MonthReceipts:
         self.entries: dict[date, Path] = {}
 
     @property
-    def toml_path(self) -> Path:
-        return self.output_dir / f"receipts_{self.year:04d}-{self.month:02d}.toml"
+    def json_path(self) -> Path:
+        return self.output_dir / f"receipts_{self.year:04d}-{self.month:02d}.json"
 
     def get(self, day: date) -> Path | None:
         return self.entries.get(day)
@@ -37,12 +35,12 @@ class MonthReceipts:
                 d.isoformat(): str(p) for d, p in sorted(self.entries.items())
             }
         }
-        self.toml_path.write_text(tomli_w.dumps(data), encoding="utf-8")
+        self.json_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     def load(self) -> None:
         self.entries.clear()
-        if not self.toml_path.exists():
+        if not self.json_path.exists():
             return
-        data = tomllib.loads(self.toml_path.read_text(encoding="utf-8"))
+        data = json.loads(self.json_path.read_text(encoding="utf-8"))
         for key, value in data.get("receipts", {}).items():
             self.assign(date.fromisoformat(key), Path(value))

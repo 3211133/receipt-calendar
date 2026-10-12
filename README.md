@@ -1,14 +1,14 @@
 # 領収書カレンダー（receipt-calendar）
 
-スマホで撮影した駐輪場の領収書画像に日付を割り当て、`日付 = ファイルパス` の一覧をTOMLで出力するツールです。
+スマホで撮影した駐輪場の領収書画像に日付を割り当て、`日付 = ファイルパス` の一覧をJSONで出力するツールです。
 撮影日と領収書の日付は一致しないため、月カレンダーの日付セルへ画像をドラッグ＆ドロップして手動で割り当てます。
-経費精算システムへの登録は対象外です（出力したTOMLを次の工程で利用します）。
+経費精算システムへの登録は対象外です（出力したJSONを次の工程で利用します）。
 
 ## 必要環境
 
 - Windows
 - Python 3.11 以上
-- 依存パッケージ: `tkinterdnd2`, `tomli_w`
+- 依存パッケージ: `tkinterdnd2`
 
 ```
 pip install -r requirements.txt
@@ -39,12 +39,15 @@ python main.py
 
 ## 出力形式
 
-`output\receipts_YYYY-MM.toml`（1か月ごとに1ファイル）
+`output\receipts_YYYY-MM.json`（1か月ごとに1ファイル、UTF-8）
 
-```toml
-[receipts]
-2026-10-01 = "C:\\Users\\...\\IMG_20261003_081522.jpg"
-2026-10-02 = "C:\\Users\\...\\IMG_20261003_081610.jpg"
+```json
+{
+  "receipts": {
+    "2026-10-01": "C:\\Users\\...\\IMG_20261003_081522.jpg",
+    "2026-10-02": "C:\\Users\\...\\IMG_20261003_081610.jpg"
+  }
+}
 ```
 
 - キーは日付（`YYYY-MM-DD`）で、日付順に並びます。
@@ -54,7 +57,7 @@ python main.py
 
 ```
 main.py                     起動スクリプト
-receipt_calendar/model.py   月ごとの割り当て管理とTOML読み書き（GUI非依存）
+receipt_calendar/model.py   月ごとの割り当て管理とJSON読み書き（GUI非依存）
 receipt_calendar/app.py     tkinter GUI
 tests/test_model.py         model層のテスト
 ```
