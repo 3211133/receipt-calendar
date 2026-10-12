@@ -55,7 +55,6 @@ class ReceiptCalendarApp:
                 cell.dnd_bind("<<DropLeave>>", self._on_drop_leave)
                 cell.dnd_bind("<<Drop>>", self._on_drop)
                 cell.bind("<Button-3>", self._on_right_click)
-                cell.bind("<Enter>", self._on_hover)
                 self.cells.append(cell)
 
         self.status = tk.Label(root, anchor="w", relief="sunken", font=("Meiryo", 9))
@@ -116,7 +115,7 @@ class ReceiptCalendarApp:
         cell = event.widget
         self._paint(cell)
         day = cell.day
-        if day is None or self.load_failed:
+        if day is None or not self._editable():
             return event.action
         files = self.root.tk.splitlist(event.data)
         if len(files) != 1:
@@ -139,25 +138,24 @@ class ReceiptCalendarApp:
     def _on_right_click(self, event) -> None:
         day = event.widget.day
         path = self.receipts.get(day) if day else None
-        if path is None or self.load_failed:
+        if path is None or not self._editable():
             return
         if messagebox.askyesno("登録解除", f"{day} の登録を解除しますか？\n\n{path.name}"):
             self.receipts.remove(day)
             self._save()
 
-    def _on_hover(self, event) -> None:
-        day = event.widget.day
-        path = self.receipts.get(day) if day else None
-        if path is not None:
-            self.status.config(text=f"{day}: {path}")
-        else:
-            self.status.config(text=f"登録 {len(self.receipts.entries)} 件  →  {self.receipts.json_path}")
+    def _editable(self) -> bool:
+        if self.load_failed:
+            messagebox.showerror("編集不可", f"読み込みに失敗した月は編集できません。\n{self.receipts.json_path}")
+        return not self.load_failed
 
     def _save(self) -> None:
         try:
             self.receipts.save()
         except OSError as e:
             messagebox.showerror("保存エラー", str(e))
+            self.load_month()  # 画面をディスクの内容に戻す
+            return
         self.redraw()
 
 
